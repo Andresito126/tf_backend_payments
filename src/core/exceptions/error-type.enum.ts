@@ -1,0 +1,8 @@
+export enum ErrorType {
+  NOT_FOUND,
+  CONFLICT,
+  UNAUTHORIZED,
+  FORBIDDEN,
+  BUSINESS_RULE,
+  INTERNAL,
+}
