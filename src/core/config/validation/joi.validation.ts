@@ -25,12 +25,9 @@ export default Joi.object({
   ENCRYPTION_KEY: Joi.string().length(64).required(),
   HMAC_SECRET: Joi.string().length(64).required(),
 
-  // paypal
-  PAYPAL_CLIENT_ID: Joi.string().required(),
-  PAYPAL_CLIENT_SECRET: Joi.string().required(),
-  PAYPAL_API_BASE: Joi.string()
-    .uri()
-    .default('https://api-m.sandbox.paypal.com'),
-  PAYPAL_CURRENCY: Joi.string().length(3).default('MXN'),
+  // conekta
+  CONEKTA_PRIVATE_KEY: Joi.string().required(),
+  CONEKTA_API_BASE: Joi.string().uri().default('https://api.conekta.io'),
+  CONEKTA_CURRENCY: Joi.string().length(3).default('MXN'),
   TREASUREFLOW_FEE_RATE: Joi.number().min(0).max(1).default(0.05),
 });

@@ -5,6 +5,6 @@ export class PaymentCaptureFailedException extends BaseException {
   readonly type = ErrorType.BUSINESS_RULE;
 
   constructor(issue: string) {
-    super(`No se pudo capturar el pago en PayPal: ${issue}`);
+    super(`No se pudo procesar el pago: ${issue}`);
   }
 }

@@ -1,6 +1,7 @@
 import { roundMoney } from '../../../../core/utils/money.util';
 
-export type PaymentStatus = 'pending' | 'released' | 'failed';
+export type PaymentStatus = 'pending' | 'paid_held' | 'released' | 'failed';
+export type PaymentMethod = 'card' | 'cash' | 'transfer';
 
 export interface PaymentProps {
   paymentId: string;
@@ -10,7 +11,10 @@ export interface PaymentProps {
   grossAmount: number;
   treasureflowFee: number;
   receiverNetAmount: number;
-  paypalTransactionId: string | null;
+  paymentMethod: PaymentMethod;
+  gatewayOrderId: string | null;
+  gatewayChargeId: string | null;
+  paymentReference: string | null; // referencia OXXO o CLABE SPEI
   status: PaymentStatus;
   paymentDate: Date;
 }
@@ -25,6 +29,7 @@ export class Payment {
     receiverId: string,
     grossAmount: number,
     feeRate: number,
+    paymentMethod: PaymentMethod,
   ): Payment {
     const treasureflowFee = roundMoney(grossAmount * feeRate);
     return new Payment({
@@ -35,7 +40,10 @@ export class Payment {
       grossAmount: roundMoney(grossAmount),
       treasureflowFee,
       receiverNetAmount: roundMoney(grossAmount - treasureflowFee),
-      paypalTransactionId: null,
+      paymentMethod,
+      gatewayOrderId: null,
+      gatewayChargeId: null,
+      paymentReference: null,
       status: 'pending',
       paymentDate: new Date(),
     });
@@ -45,17 +53,26 @@ export class Payment {
     return new Payment(props);
   }
 
-  attachPaypalOrder(orderId: string): void {
-    this.props.paypalTransactionId = orderId;
+  attachGatewayOrder(orderId: string, chargeId: string | null, reference: string | null): void {
+    this.props.gatewayOrderId = orderId;
+    this.props.gatewayChargeId = chargeId;
+    this.props.paymentReference = reference;
   }
 
-  markReleased(paypalCaptureId: string): void {
+  markPaidHeld(): void {
+    this.props.status = 'paid_held';
+  }
+
+  markReleased(): void {
     this.props.status = 'released';
-    this.props.paypalTransactionId = paypalCaptureId;
   }
 
   markFailed(): void {
     this.props.status = 'failed';
+  }
+
+  isReleased(): boolean {
+    return this.props.status === 'released';
   }
 
   // ── Getters ─────────────────────────────────────────────────────────────────
@@ -88,8 +105,20 @@ export class Payment {
     return this.props.receiverNetAmount;
   }
 
-  getPaypalTransactionId(): string | null {
-    return this.props.paypalTransactionId;
+  getPaymentMethod(): PaymentMethod {
+    return this.props.paymentMethod;
+  }
+
+  getGatewayOrderId(): string | null {
+    return this.props.gatewayOrderId;
+  }
+
+  getGatewayChargeId(): string | null {
+    return this.props.gatewayChargeId;
+  }
+
+  getPaymentReference(): string | null {
+    return this.props.paymentReference;
   }
 
   getStatus(): PaymentStatus {
