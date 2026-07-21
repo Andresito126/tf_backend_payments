@@ -38,7 +38,7 @@ export class PostgresUserAccountAdapter implements IUserAccountPort {
 
     return {
       userId: row.id as string,
-      name: name || 'Usuario TreasureFlow',
+      name: this.sanitizeNameForConekta(name) || 'Usuario TreasureFlow',
       email: this.safeDecrypt(row.email) || 'sin-email@treasureflow.mx',
       phone: this.safeDecrypt(row.phone) || '+525555555555',
     };
@@ -51,5 +51,19 @@ export class PostgresUserAccountAdapter implements IUserAccountPort {
     } catch {
       return '';
     }
+  }
+
+  /**
+   * Conekta valida `customer_info.name` como si fuera un nombre de persona
+   * (solo letras y espacios) — un negocio real con número en el nombre
+   * ("Recicladora 24", "Chatarrería No. 3") lo rechaza con "Formato inválido".
+   * Quitamos dígitos/símbolos solo para este campo; el store_name real no se toca.
+   */
+  private sanitizeNameForConekta(name: string | null): string {
+    if (!name) return '';
+    return name
+      .replace(/[^\p{L}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 }
