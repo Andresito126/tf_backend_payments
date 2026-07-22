@@ -9,8 +9,8 @@ import {
   Request,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../../auth/infraestructure/guards/jwt-auth.guard';
-import type { AuthenticatedUser } from '../../../auth/infraestructure/strategies/jwt.strategy';
+import { GatewayAuthGuard } from '../../../auth/infraestructure/guards/gateway-auth.guard';
+import type { AuthenticatedUser } from '../../../auth/infraestructure/guards/gateway-auth.guard';
 import { GetCollectionsUseCase } from '../../application/usecases/get-collections.use-case';
 import { GetCollectionDetailUseCase } from '../../application/usecases/get-collection-detail.use-case';
 import { GetCollectionByOfferUseCase } from '../../application/usecases/get-collection-by-offer.use-case';
@@ -54,7 +54,7 @@ function mapPayment(payment: Payment | null) {
 
 @ApiTags('collections')
 @ApiBearerAuth('access-token')
-@UseGuards(JwtAuthGuard)
+@UseGuards(GatewayAuthGuard)
 @Controller('collections')
 export class CollectionsController {
   constructor(
