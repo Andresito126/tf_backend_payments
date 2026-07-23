@@ -25,9 +25,14 @@ export default Joi.object({
   ENCRYPTION_KEY: Joi.string().length(64).required(),
   HMAC_SECRET: Joi.string().length(64).required(),
 
-  // conekta
-  CONEKTA_PRIVATE_KEY: Joi.string().required(),
+  // conekta — esquema mixto: card/transfer usan la llave LIVE, cash (OXXO) la TEST.
+  // CONEKTA_PRIVATE_KEY (legacy) sirve de fallback para ambas.
+  CONEKTA_PRIVATE_KEY: Joi.string(),
+  CONEKTA_PRIVATE_KEY_LIVE: Joi.string(),
+  CONEKTA_PRIVATE_KEY_TEST: Joi.string(),
   CONEKTA_API_BASE: Joi.string().uri().default('https://api.conekta.io'),
   CONEKTA_CURRENCY: Joi.string().length(3).default('MXN'),
   TREASUREFLOW_FEE_RATE: Joi.number().min(0).max(1).default(0.05),
-});
+})
+  .or('CONEKTA_PRIVATE_KEY', 'CONEKTA_PRIVATE_KEY_LIVE')
+  .or('CONEKTA_PRIVATE_KEY', 'CONEKTA_PRIVATE_KEY_TEST');

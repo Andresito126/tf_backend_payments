@@ -51,7 +51,10 @@ export class CheckPaymentStatusUseCase {
       };
     }
 
-    const gateway = await this.paymentGateway.getOrderStatus(payment.getGatewayOrderId()!);
+    const gateway = await this.paymentGateway.getOrderStatus(
+      payment.getGatewayOrderId()!,
+      payment.getPaymentMethod(),
+    );
 
     if (gateway.status === 'paid') {
       await this.settlePaymentUseCase.execute(payment);

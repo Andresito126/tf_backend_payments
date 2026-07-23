@@ -31,5 +31,10 @@ export interface GatewayOrderStatus {
 
 export interface IPaymentGateway {
   createCharge(input: CreateChargeInput): Promise<GatewayChargeResult>;
-  getOrderStatus(orderId: string): Promise<GatewayOrderStatus>;
+  /**
+   * Consulta el estado real de la orden en Conekta. Recibe el método de pago
+   * porque cada método puede operar con una llave distinta (esquema mixto:
+   * card/transfer → LIVE, cash → TEST).
+   */
+  getOrderStatus(orderId: string, method: PaymentMethod): Promise<GatewayOrderStatus>;
 }

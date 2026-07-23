@@ -6,6 +6,7 @@ import {
   GatewayChargeResult,
   GatewayOrderStatus,
 } from '../../application/ports/payment-gateway.port';
+import type { PaymentMethod } from '../../domain/entities/payment.entity';
 import { PaymentCaptureFailedException } from '../../domain/exceptions/payment-capture-failed.exception';
 import { BaseConektaStrategy, ConektaOrderResponse } from './strategies/base-conekta.strategy';
 import { CardPaymentStrategy } from './strategies/card.strategy';
@@ -15,21 +16,25 @@ import { TransferPaymentStrategy } from './strategies/transfer.strategy';
 /**
  * Gateway de pagos Conekta (equivalente a service.py del demo).
  * Patrón Strategy: resuelve dinámicamente el método de pago solicitado.
+ *
+ * Esquema mixto de llaves: cada strategy se construye con la llave de SU
+ * entorno (card/transfer → LIVE para cobros reales, cash/OXXO → TEST sandbox).
+ * La decisión método→llave vive en CONEKTA.KEY_BY_METHOD (conekta.config.ts).
  */
 @Injectable()
 export class ConektaGatewayAdapter implements IPaymentGateway {
   private readonly strategies: Record<string, BaseConektaStrategy>;
   private readonly apiBase: string;
-  private readonly privateKey: string;
+  private readonly keyByMethod: Record<string, string>;
 
   constructor(configService: ConfigService) {
     this.apiBase = configService.get<string>('CONEKTA.API_BASE')!;
-    this.privateKey = configService.get<string>('CONEKTA.PRIVATE_KEY')!;
+    this.keyByMethod = configService.get<Record<string, string>>('CONEKTA.KEY_BY_METHOD')!;
 
     this.strategies = {
-      card: new CardPaymentStrategy(this.apiBase, this.privateKey),
-      cash: new CashPaymentStrategy(this.apiBase, this.privateKey),
-      transfer: new TransferPaymentStrategy(this.apiBase, this.privateKey),
+      card: new CardPaymentStrategy(this.apiBase, this.keyByMethod.card),
+      cash: new CashPaymentStrategy(this.apiBase, this.keyByMethod.cash),
+      transfer: new TransferPaymentStrategy(this.apiBase, this.keyByMethod.transfer),
     };
   }
 
@@ -43,8 +48,14 @@ export class ConektaGatewayAdapter implements IPaymentGateway {
     return strategy.processPayment(input);
   }
 
-  async getOrderStatus(orderId: string): Promise<GatewayOrderStatus> {
-    const credentials = Buffer.from(`${this.privateKey}:`).toString('base64');
+  async getOrderStatus(orderId: string, method: PaymentMethod): Promise<GatewayOrderStatus> {
+    const privateKey = this.keyByMethod[method];
+    if (!privateKey) {
+      throw new PaymentCaptureFailedException(
+        `Método de pago '${method}' sin llave Conekta configurada.`,
+      );
+    }
+    const credentials = Buffer.from(`${privateKey}:`).toString('base64');
 
     let response: Response;
     try {

@@ -12,6 +12,7 @@ import { RegisterWeighingUseCase } from './application/usecases/register-weighin
 import { ConfirmAmountUseCase } from './application/usecases/confirm-amount.use-case';
 import { CreatePaymentUseCase } from './application/usecases/create-payment.use-case';
 import { SettlePaymentUseCase } from './application/usecases/settle-payment.use-case';
+import { ProcessGatewayEventUseCase } from './application/usecases/process-gateway-event.use-case';
 import { CheckPaymentStatusUseCase } from './application/usecases/check-payment-status.use-case';
 import { CancelCollectionUseCase } from './application/usecases/cancel-collection.use-case';
 import { GetCollectionsUseCase } from './application/usecases/get-collections.use-case';
@@ -144,6 +145,15 @@ import { PostgreSQl } from '../../core/database/postgresql.connection';
         SettlePaymentUseCase,
         ConfigService,
       ],
+    },
+    {
+      provide: ProcessGatewayEventUseCase,
+      useFactory: (
+        paymentRepo: IPaymentRepository,
+        paymentGateway: IPaymentGateway,
+        settlePaymentUseCase: SettlePaymentUseCase,
+      ) => new ProcessGatewayEventUseCase(paymentRepo, paymentGateway, settlePaymentUseCase),
+      inject: ['IPaymentRepository', 'IPaymentGateway', SettlePaymentUseCase],
     },
     {
       provide: CheckPaymentStatusUseCase,

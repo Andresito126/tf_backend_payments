@@ -1,7 +1,7 @@
 {
   "name": "tf_backend_payments",
   "version": "0.0.1",
-  "description": "TreasureFlow payments service — collections lifecycle + PayPal",
+  "description": "TreasureFlow payments service — collections lifecycle + Conekta",
   "author": "",
   "private": true,
   "license": "UNLICENSED",

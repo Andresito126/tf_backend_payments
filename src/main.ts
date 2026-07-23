@@ -23,7 +23,7 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('TreasureFlow Payments API')
-    .setDescription('Servicio de collections y pagos (PayPal) de TreasureFlow')
+    .setDescription('Servicio de collections y pagos (Conekta) de TreasureFlow')
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

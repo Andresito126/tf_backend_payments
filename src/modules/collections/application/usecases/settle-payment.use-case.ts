@@ -12,7 +12,8 @@ import { CollectionNotFoundException } from '../../domain/exceptions/collection-
  * collection → completed, evento payments.settle a main y push al ciudadano.
  *
  * Idempotente: si el pago ya está released no hace nada.
- * Lo invocan: pago con tarjeta (síncrono), polling de estado y webhook.
+ * Lo invocan: pago con tarjeta (síncrono), polling de estado y
+ * ProcessGatewayEventUseCase (webhook verificado).
  */
 export class SettlePaymentUseCase {
   constructor(
@@ -63,12 +64,4 @@ export class SettlePaymentUseCase {
     }
   }
 
-  async executeByGatewayOrderId(orderId: string): Promise<void> {
-    const payment = await this.paymentRepository.findByGatewayOrderId(orderId);
-    if (!payment) {
-      console.warn(`[SettlePayment] Webhook con orden desconocida: ${orderId}`);
-      return;
-    }
-    await this.execute(payment);
-  }
 }

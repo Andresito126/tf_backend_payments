@@ -1,38 +1,55 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SettlePaymentUseCase } from '../../application/usecases/settle-payment.use-case';
+import { ProcessGatewayEventUseCase } from '../../application/usecases/process-gateway-event.use-case';
 
 interface ConektaWebhookEvent {
   type?: string;
   data?: {
     object?: {
       id?: string;
+      order_id?: string;
       payment_status?: string;
     };
   };
 }
 
+/** Eventos que disparan una re-verificación del estado de la orden. */
+const HANDLED_EVENTS = new Set([
+  'order.paid',
+  'order.expired',
+  'order.canceled',
+  'charge.declined',
+]);
+
 @ApiTags('webhooks')
 @Controller('webhooks')
 export class WebhooksController {
-  constructor(private readonly settlePaymentUseCase: SettlePaymentUseCase) {}
+  constructor(private readonly processGatewayEvent: ProcessGatewayEventUseCase) {}
 
   @Post('conekta')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Webhook de Conekta (order.paid)',
-    description: 'Conekta notifica aquí cuando una orden OXXO/SPEI fue pagada. Idempotente.',
+    summary: 'Webhook de Conekta (order.paid / order.expired / charge.declined)',
+    description:
+      'No confía en el payload: re-consulta el estado real de la orden a la API de ' +
+      'Conekta antes de liberar o marcar fallido. Idempotente.',
   })
   async handleConektaEvent(@Body() event: ConektaWebhookEvent) {
-    const orderId = event?.data?.object?.id;
+    // En eventos de charge el objeto es un charge (order_id apunta a la orden);
+    // en eventos de order el objeto ES la orden (id).
+    const obj = event?.data?.object;
+    const orderId = obj?.order_id ?? obj?.id;
 
-    if (event?.type === 'order.paid' && orderId) {
+    if (event?.type && HANDLED_EVENTS.has(event.type) && orderId) {
       try {
-        await this.settlePaymentUseCase.executeByGatewayOrderId(orderId);
+        await this.processGatewayEvent.execute(orderId);
       } catch (err) {
         // Siempre responder 200 para que Conekta no reintente indefinidamente;
         // el polling de estado sirve como respaldo.
-        console.error('[ConektaWebhook] Error liquidando pago:', err instanceof Error ? err.message : String(err));
+        console.error(
+          '[ConektaWebhook] Error procesando evento:',
+          err instanceof Error ? err.message : String(err),
+        );
       }
     }
 
