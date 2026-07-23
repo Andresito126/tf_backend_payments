@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthModule } from '../auth/auth.module';
+import { PremiumModule } from '../premium/premium.module';
+import { ActivatePremiumUseCase } from '../premium/application/usecases/activate-premium.use-case';
 
 // Controllers
 import { CollectionsController } from './infraestructure/controllers/collections.controller';
@@ -43,7 +45,7 @@ import type { IFieldEncryptor } from '../common/ports/field-encryptor.port';
 import { PostgreSQl } from '../../core/database/postgresql.connection';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, PremiumModule],
   controllers: [CollectionsController, WebhooksController],
   providers: [
     // ── Adapters (string tokens) ──────────────────────────────────────────────
@@ -152,8 +154,9 @@ import { PostgreSQl } from '../../core/database/postgresql.connection';
         paymentRepo: IPaymentRepository,
         paymentGateway: IPaymentGateway,
         settlePaymentUseCase: SettlePaymentUseCase,
-      ) => new ProcessGatewayEventUseCase(paymentRepo, paymentGateway, settlePaymentUseCase),
-      inject: ['IPaymentRepository', 'IPaymentGateway', SettlePaymentUseCase],
+        activatePremiumUseCase: ActivatePremiumUseCase,
+      ) => new ProcessGatewayEventUseCase(paymentRepo, paymentGateway, settlePaymentUseCase, activatePremiumUseCase),
+      inject: ['IPaymentRepository', 'IPaymentGateway', SettlePaymentUseCase, ActivatePremiumUseCase],
     },
     {
       provide: CheckPaymentStatusUseCase,

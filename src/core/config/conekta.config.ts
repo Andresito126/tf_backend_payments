@@ -20,5 +20,6 @@ export default registerAs('CONEKTA', () => {
     API_BASE: process.env.CONEKTA_API_BASE,
     CURRENCY: process.env.CONEKTA_CURRENCY,
     FEE_RATE: process.env.TREASUREFLOW_FEE_RATE,
+    PREMIUM_PRICE_MXN: process.env.PREMIUM_PRICE_MXN,
   };
 });

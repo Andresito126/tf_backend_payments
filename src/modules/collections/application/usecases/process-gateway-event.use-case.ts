@@ -1,6 +1,7 @@
 import type { IPaymentRepository } from '../../domain/repositories/payment.repository';
 import type { IPaymentGateway } from '../ports/payment-gateway.port';
 import { SettlePaymentUseCase } from './settle-payment.use-case';
+import { ActivatePremiumUseCase } from '../../../premium/application/usecases/activate-premium.use-case';
 
 /**
  * Procesa un evento del webhook de Conekta SIN confiar en el payload:
@@ -19,6 +20,7 @@ export class ProcessGatewayEventUseCase {
     private readonly paymentRepository: IPaymentRepository,
     private readonly paymentGateway: IPaymentGateway,
     private readonly settlePaymentUseCase: SettlePaymentUseCase,
+    private readonly activatePremiumUseCase: ActivatePremiumUseCase,
   ) {}
 
   async execute(orderId: string): Promise<void> {
@@ -37,7 +39,11 @@ export class ProcessGatewayEventUseCase {
     );
 
     if (gateway.status === 'paid') {
-      await this.settlePaymentUseCase.execute(payment);
+      if (payment.getPurpose() === 'premium') {
+        await this.activatePremiumUseCase.execute(payment);
+      } else {
+        await this.settlePaymentUseCase.execute(payment);
+      }
     } else if (gateway.status === 'expired' || gateway.status === 'declined') {
       payment.markFailed();
       await this.paymentRepository.update(payment);

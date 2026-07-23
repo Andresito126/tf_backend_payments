@@ -27,7 +27,7 @@ export class SettlePaymentUseCase {
   async execute(payment: Payment): Promise<void> {
     if (payment.isReleased()) return;
 
-    const collection = await this.collectionRepository.findById(payment.getCollectionId());
+    const collection = await this.collectionRepository.findById(payment.getCollectionId()!);
     if (!collection) throw new CollectionNotFoundException();
 
     payment.markPaidHeld();

@@ -33,6 +33,7 @@ export default Joi.object({
   CONEKTA_API_BASE: Joi.string().uri().default('https://api.conekta.io'),
   CONEKTA_CURRENCY: Joi.string().length(3).default('MXN'),
   TREASUREFLOW_FEE_RATE: Joi.number().min(0).max(1).default(0.05),
+  PREMIUM_PRICE_MXN: Joi.number().min(1).default(16),
 })
   .or('CONEKTA_PRIVATE_KEY', 'CONEKTA_PRIVATE_KEY_LIVE')
   .or('CONEKTA_PRIVATE_KEY', 'CONEKTA_PRIVATE_KEY_TEST');

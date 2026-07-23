@@ -2,10 +2,12 @@ import { roundMoney } from '../../../../core/utils/money.util';
 
 export type PaymentStatus = 'pending' | 'paid_held' | 'released' | 'failed';
 export type PaymentMethod = 'card' | 'cash' | 'transfer';
+export type PaymentPurpose = 'collection' | 'reservation' | 'premium';
 
 export interface PaymentProps {
   paymentId: string;
-  collectionId: string;
+  collectionId: string | null;
+  purpose: PaymentPurpose;
   payerId: string;
   receiverId: string;
   grossAmount: number;
@@ -35,11 +37,36 @@ export class Payment {
     return new Payment({
       paymentId,
       collectionId,
+      purpose: 'collection',
       payerId,
       receiverId,
       grossAmount: roundMoney(grossAmount),
       treasureflowFee,
       receiverNetAmount: roundMoney(grossAmount - treasureflowFee),
+      paymentMethod,
+      gatewayOrderId: null,
+      gatewayChargeId: null,
+      paymentReference: null,
+      status: 'pending',
+      paymentDate: new Date(),
+    });
+  }
+
+  static createPendingPremium(
+    paymentId: string,
+    userId: string,
+    grossAmount: number,
+    paymentMethod: PaymentMethod,
+  ): Payment {
+    return new Payment({
+      paymentId,
+      collectionId: null,
+      purpose: 'premium',
+      payerId: userId,
+      receiverId: userId,
+      grossAmount: roundMoney(grossAmount),
+      treasureflowFee: 0,
+      receiverNetAmount: roundMoney(grossAmount),
       paymentMethod,
       gatewayOrderId: null,
       gatewayChargeId: null,
@@ -81,8 +108,12 @@ export class Payment {
     return this.props.paymentId;
   }
 
-  getCollectionId(): string {
+  getCollectionId(): string | null {
     return this.props.collectionId;
+  }
+
+  getPurpose(): PaymentPurpose {
+    return this.props.purpose;
   }
 
   getPayerId(): string {

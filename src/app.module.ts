@@ -13,6 +13,7 @@ import { MessagingModule } from './core/messaging/messaging.module';
 import { CommonModule } from './modules/common/common.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CollectionsModule } from './modules/collections/collections.module';
+import { PremiumModule } from './modules/premium/premium.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CollectionsModule } from './modules/collections/collections.module';
     MessagingModule,
     CommonModule,
     AuthModule,
+    PremiumModule,
     CollectionsModule,
   ],
   controllers: [],
