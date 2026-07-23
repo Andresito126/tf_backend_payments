@@ -54,14 +54,25 @@ export class Collection {
 
   // El pesaje es también la confirmación de recepción del material por el local
   // (flujo sin QR): pending_delivery → pending_confirmation en un solo paso.
-  registerWeighing(actualQuantity: number, pricePerUnit: number, now: Date = new Date()): void {
+  // `manualFinalAmount`: el local puede negociar el precio en persona al pesar
+  // el material — si se manda, sustituye el cálculo automático (peso × precio
+  // ofertado).
+  registerWeighing(
+    actualQuantity: number,
+    pricePerUnit: number,
+    manualFinalAmount?: number,
+    now: Date = new Date(),
+  ): void {
     this.assertStatus('pending_delivery', 'registrar pesaje');
     if (!Number.isFinite(actualQuantity) || actualQuantity <= 0) {
       throw new InvalidQuantityException();
     }
+    if (manualFinalAmount !== undefined && (!Number.isFinite(manualFinalAmount) || manualFinalAmount <= 0)) {
+      throw new InvalidQuantityException();
+    }
     this.props.deliveryScannedAt = now;
     this.props.actualQuantity = actualQuantity;
-    this.props.finalAmount = roundMoney(actualQuantity * pricePerUnit);
+    this.props.finalAmount = roundMoney(manualFinalAmount ?? actualQuantity * pricePerUnit);
     this.props.status = 'pending_confirmation';
   }
 

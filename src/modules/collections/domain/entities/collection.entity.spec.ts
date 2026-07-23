@@ -36,12 +36,21 @@ describe('Collection', () => {
       const collection = buildCollection('pending_delivery');
       const now = new Date('2026-07-15T12:00:00Z');
 
-      collection.registerWeighing(3.5, 12.5, now);
+      collection.registerWeighing(3.5, 12.5, undefined, now);
 
       expect(collection.getStatus()).toBe('pending_confirmation');
       expect(collection.getDeliveryScannedAt()).toEqual(now);
       expect(collection.getActualQuantity()).toBe(3.5);
       expect(collection.getFinalAmount()).toBe(43.75);
+    });
+
+    it('usa el monto manual cuando se provee, en vez de peso × precio', () => {
+      const collection = buildCollection('pending_delivery');
+
+      collection.registerWeighing(3.5, 12.5, 100);
+
+      expect(collection.getActualQuantity()).toBe(3.5);
+      expect(collection.getFinalAmount()).toBe(100);
     });
 
     it('redondea a 2 decimales sin errores de coma flotante', () => {

@@ -130,6 +130,7 @@ export class CollectionsController {
       collectionId: id,
       establishmentId: req.user.id,
       actualQuantity: dto.actualQuantity,
+      manualFinalAmount: dto.finalAmount,
     });
   }
 

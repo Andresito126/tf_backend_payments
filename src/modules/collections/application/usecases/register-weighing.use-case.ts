@@ -9,6 +9,7 @@ export interface RegisterWeighingInput {
   collectionId: string;
   establishmentId: string;
   actualQuantity: number;
+  manualFinalAmount?: number;
 }
 
 export class RegisterWeighingUseCase {
@@ -28,7 +29,7 @@ export class RegisterWeighingUseCase {
       throw new CollectionOwnershipException();
     }
 
-    collection.registerWeighing(input.actualQuantity, offer.pricePerUnit);
+    collection.registerWeighing(input.actualQuantity, offer.pricePerUnit, input.manualFinalAmount);
     await this.collectionRepository.update(collection);
 
     try {
